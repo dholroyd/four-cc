@@ -79,6 +79,9 @@
 //! println!("it's {:?}", uuid);  // produces: it's FourCC{u\xffi\x00}
 //! ```
 
+#![forbid(unsafe_code)]
+#![deny(rust_2018_idioms, future_incompatible, missing_docs)]
+
 use std::fmt;
 
 /// A _four-character-code_ value.
@@ -117,7 +120,7 @@ impl From<FourCC> for u32 {
     }
 }
 impl fmt::Display for FourCC {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match std::str::from_utf8(&self.0) {
             Ok(s) => f.write_str(s),
             Err(_) => {
@@ -133,7 +136,7 @@ impl fmt::Display for FourCC {
     }
 }
 impl fmt::Debug for FourCC {
-    fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         f.write_str("FourCC{")?;
         fmt::Display::fmt(self, f)?;
         f.write_str("}")
