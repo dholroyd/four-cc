@@ -1,0 +1,12 @@
+[package]
+name = "four-cc"
+version = "0.1.0"
+authors = ["David Holroyd <dave@badgers-in-foil.co.uk>"]
+edition = "2018"
+description = "Newtype wrapper providing a convenient representation of four-character-code values"
+repository = "https://github.com/dholroyd/four-cc"
+license = "MIT/Apache-2.0"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
