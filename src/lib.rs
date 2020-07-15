@@ -104,7 +104,7 @@ impl From<u32> for FourCC {
             (val >> 24 & 0xff) as u8,
             (val >> 16 & 0xff) as u8,
             (val >> 8  & 0xff) as u8,
-            (val >> 0  & 0xff) as u8
+            (val       & 0xff) as u8
         ])
     }
 }
@@ -113,14 +113,14 @@ impl From<FourCC> for u32 {
         ((val.0[0] as u32) << 24 & 0xff000000) |
         ((val.0[1] as u32) << 16 & 0x00ff0000) |
         ((val.0[2] as u32) << 8  & 0x0000ff00) |
-        ((val.0[3] as u32) >> 0  & 0x000000ff)
+        ((val.0[3] as u32)       & 0x000000ff)
     }
 }
 impl fmt::Display for FourCC {
     fn fmt(&self, f: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match std::str::from_utf8(&self.0) {
             Ok(s) => f.write_str(s),
-            Err(e) => {
+            Err(_) => {
                 // If we return fmt::Error, then for example format!() will panic, so we choose
                 // an alternative representation instead
                 let s = &self.0
