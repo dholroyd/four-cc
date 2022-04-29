@@ -88,6 +88,8 @@ use std::fmt;
 ///
 /// See the [module level documentation](index.html).
 #[derive(Clone,Copy,PartialEq,Eq,Hash)]
+#[cfg_attr(feature = "zerocopy", derive(zerocopy::FromBytes, zerocopy::AsBytes))]
+#[repr(C, packed)]
 pub struct FourCC (
     pub [u8; 4]
 );
@@ -140,6 +142,77 @@ impl fmt::Debug for FourCC {
         f.write_str("FourCC{")?;
         fmt::Display::fmt(self, f)?;
         f.write_str("}")
+    }
+}
+
+#[cfg(feature = "schemars")]
+impl schemars::JsonSchema for FourCC {
+    fn schema_name() -> String {
+        "FourCC".to_string()
+    }
+    fn json_schema(gen: &mut schemars::gen::SchemaGenerator) -> schemars::schema::Schema {
+        gen.subschema_for::<&str>()
+    }
+    fn is_referenceable() -> bool {
+        false
+    }
+}
+
+#[cfg(feature = "serde")]
+impl serde::ser::Serialize for FourCC {
+    fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
+        serializer.collect_str(self)
+    }
+}
+
+#[cfg(feature = "serde")]
+struct FromStrVisitor<T> {
+    expecting: &'static str,
+    ty: core::marker::PhantomData<T>,
+}
+
+#[cfg(feature = "serde")]
+impl<T> FromStrVisitor<T> {
+    fn new(expecting: &'static str) -> Self {
+        FromStrVisitor {
+            expecting: expecting,
+            ty: core::marker::PhantomData,
+        }
+    }
+}
+
+#[cfg(feature = "serde")]
+impl core::str::FromStr for FourCC {
+    type Err = u32;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Ok(s.as_bytes().into())
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de, T> serde::de::Visitor<'de> for FromStrVisitor<T>
+where
+    T: core::str::FromStr,
+    T::Err: fmt::Display,
+{
+    type Value = T;
+
+    fn expecting(&self, formatter: &mut fmt::Formatter<'_>) -> fmt::Result {
+        formatter.write_str(self.expecting)
+    }
+
+    fn visit_str<E>(self, s: &str) -> Result<Self::Value, E>
+    where
+        E: serde::de::Error,
+    {
+        s.parse().map_err(serde::de::Error::custom)
+    }
+}
+
+#[cfg(feature = "serde")]
+impl<'de> serde::de::Deserialize<'de> for FourCC {
+    fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+        deserializer.deserialize_str(FromStrVisitor::new("FourCC"))
     }
 }
 
