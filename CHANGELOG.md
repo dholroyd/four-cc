@@ -1,5 +1,7 @@
 # four-cc Change Log
 
+## Unreleased
+
 ## 0.2.0 - 2022-05-22
 
 ### Changed
