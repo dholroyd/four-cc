@@ -81,6 +81,7 @@
 
 #![forbid(unsafe_code)]
 #![deny(rust_2018_idioms, future_incompatible, missing_docs)]
+#![cfg_attr(feature = "nightly", feature(const_trait_impl))]
 
 use std::fmt;
 
@@ -93,6 +94,14 @@ use std::fmt;
 pub struct FourCC (
     pub [u8; 4]
 );
+impl FourCC {
+    const fn from_u32(self: Self) -> u32 {
+        ((self.0[0] as u32) << 24 & 0xff000000) |
+        ((self.0[1] as u32) << 16 & 0x00ff0000) |
+        ((self.0[2] as u32) << 8  & 0x0000ff00) |
+        ((self.0[3] as u32)       & 0x000000ff)
+    }
+}
 impl<'a> From<&'a[u8; 4]> for FourCC {
     fn from(buf: &[u8; 4]) -> FourCC {
         FourCC([buf[0], buf[1], buf[2], buf[3]])
@@ -113,14 +122,28 @@ impl From<u32> for FourCC {
         ])
     }
 }
-impl From<FourCC> for u32 {
-    fn from(val: FourCC) -> Self {
-        ((val.0[0] as u32) << 24 & 0xff000000) |
-        ((val.0[1] as u32) << 16 & 0x00ff0000) |
-        ((val.0[2] as u32) << 8  & 0x0000ff00) |
-        ((val.0[3] as u32)       & 0x000000ff)
-    }
+// The macro is needed, because the `impl const` syntax doesn't exists on `stable`.
+#[cfg(not(feature = "nightly"))]
+macro_rules! from_fourcc_for_u32 {
+    () => {
+        impl From<FourCC> for u32 {
+            fn from(val: FourCC) -> Self {
+                val.from_u32()
+            }
+        }
+    };
 }
+#[cfg(feature = "nightly")]
+macro_rules! from_fourcc_for_u32 {
+    ($($t:tt)*) => {
+        impl const From<FourCC> for u32 {
+            fn from(val: FourCC) -> Self {
+                val.from_u32()
+            }
+        }
+    };
+}
+from_fourcc_for_u32!();
 impl fmt::Display for FourCC {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
         match std::str::from_utf8(&self.0) {
