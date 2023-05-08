@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Fixed
+
+ - Now supports usage in `no_std` environments.
+
 ## 0.2.0 - 2022-05-22
 
 ### Changed
