@@ -64,7 +64,7 @@
 //! # use four_cc::FourCC;
 //! # use std::fmt::Debug;
 //! let uuid = FourCC(*b"uuid");
-//! # assert_eq!("FourCC{uuid}", format!("{:?}", &uuid));
+//! # assert_eq!("FourCC(uuid)", format!("{:?}", &uuid));
 //! println!("it's {:?}", uuid);  // produces: it's FourCC{uuid}
 //! ```
 //!
@@ -75,15 +75,17 @@
 //! # use four_cc::FourCC;
 //! # use std::fmt::Debug;
 //! let uuid = FourCC(*b"u\xFFi\0");
-//! # assert_eq!("FourCC{u\\xffi\\x00}", format!("{:?}", &uuid));
+//! # assert_eq!("FourCC(u\\xffi\\x00)", format!("{:?}", &uuid));
 //! println!("it's {:?}", uuid);  // produces: it's FourCC{u\xffi\x00}
 //! ```
 
 #![forbid(unsafe_code)]
 #![deny(rust_2018_idioms, future_incompatible, missing_docs)]
 #![cfg_attr(feature = "nightly", feature(const_trait_impl))]
+#![cfg_attr(not(feature = "std"), no_std)]
 
-use std::fmt;
+use core::fmt;
+use core::result::Result;
 
 /// A _four-character-code_ value.
 ///
@@ -144,27 +146,35 @@ macro_rules! from_fourcc_for_u32 {
     };
 }
 from_fourcc_for_u32!();
+
 impl fmt::Display for FourCC {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        match std::str::from_utf8(&self.0) {
+        match core::str::from_utf8(&self.0) {
             Ok(s) => f.write_str(s),
             Err(_) => {
                 // If we return fmt::Error, then for example format!() will panic, so we choose
                 // an alternative representation instead
-                let s = &self.0
-                    .iter()
-                    .flat_map(|b| std::ascii::escape_default(*b) )
-                    .collect::<Vec<u8>>()[..];
-                f.write_str(&String::from_utf8_lossy(s))
+                let b = &self.0;
+                f.write_fmt(format_args!("{}{}{}{}",
+                                         core::ascii::escape_default(b[0]),
+                                         core::ascii::escape_default(b[1]),
+                                         core::ascii::escape_default(b[2]),
+                                         core::ascii::escape_default(b[3])))
             },
         }
     }
 }
+
 impl fmt::Debug for FourCC {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        f.write_str("FourCC{")?;
-        fmt::Display::fmt(self, f)?;
-        f.write_str("}")
+        let b = self.0;
+        f.debug_tuple("FourCC")
+          .field(&format_args!("{}{}{}{}",
+                               core::ascii::escape_default(b[0]),
+                               core::ascii::escape_default(b[1]),
+                               core::ascii::escape_default(b[2]),
+                               core::ascii::escape_default(b[3])))
+          .finish()
     }
 }
 
