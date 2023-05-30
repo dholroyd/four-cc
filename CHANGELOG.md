@@ -6,6 +6,10 @@
 
  - Now supports usage in `no_std` environments.
 
+### Added
+
+ - `impl const From<FourCC> for u32` if `nightly` feature enabled.
+
 ## 0.2.0 - 2022-05-22
 
 ### Changed
