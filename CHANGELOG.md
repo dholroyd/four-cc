@@ -2,12 +2,16 @@
 
 ## Unreleased
 
+### Fixed
+ - The `Display` implementation now escapes control characters as intended.  Previously, control characters that are
+   valid in unicode were left unchanged, including things like newline (`\n`).
+
 ## 0.3.0 - 2023-05-31
 
 ### Added
 
  - `impl const From<FourCC> for u32` if `nightly` feature enabled.
-- Now supports usage in `no_std` environments.
+ - Now supports usage in `no_std` environments.
 
 ## 0.2.0 - 2022-05-22
 

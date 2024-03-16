@@ -69,7 +69,7 @@
 //! ```
 //!
 //! Note that if the FourCC bytes are not able to be converted to UTF8, then a fallback
-//! representation will be used (as it would be suprising for `format!()` to panic).
+//! representation will be used (as it would be surprising for `format!()` to panic).
 //!
 //! ```rust
 //! # use four_cc::FourCC;
@@ -85,6 +85,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use core::fmt;
+use core::fmt::Write;
 use core::result::Result;
 
 /// A _four-character-code_ value.
@@ -147,35 +148,22 @@ from_fourcc_for_u32!();
 
 impl fmt::Display for FourCC {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        match core::str::from_utf8(&self.0) {
-            Ok(s) => f.write_str(s),
-            Err(_) => {
-                // If we return fmt::Error, then for example format!() will panic, so we choose
-                // an alternative representation instead
-                let b = &self.0;
-                f.write_fmt(format_args!(
-                    "{}{}{}{}",
-                    core::ascii::escape_default(b[0]),
-                    core::ascii::escape_default(b[1]),
-                    core::ascii::escape_default(b[2]),
-                    core::ascii::escape_default(b[3])
-                ))
-            }
+        let b = &self.0;
+        let iter = core::ascii::escape_default(b[0])
+            .chain(core::ascii::escape_default(b[1]))
+            .chain(core::ascii::escape_default(b[2]))
+            .chain(core::ascii::escape_default(b[3]));
+        for c in iter {
+            f.write_char(c as char)?;
         }
+        Ok(())
     }
 }
 
 impl fmt::Debug for FourCC {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> Result<(), fmt::Error> {
-        let b = self.0;
         f.debug_tuple("FourCC")
-            .field(&format_args!(
-                "{}{}{}{}",
-                core::ascii::escape_default(b[0]),
-                core::ascii::escape_default(b[1]),
-                core::ascii::escape_default(b[2]),
-                core::ascii::escape_default(b[3])
-            ))
+            .field(&format_args!("{}", self))
             .finish()
     }
 }
