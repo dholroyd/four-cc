@@ -10,6 +10,10 @@
 //! use four_cc::FourCC;
 //!
 //! let uuid = FourCC(*b"uuid");
+//!
+//! // using Into
+//! let code: FourCC = b"uuid".into();
+//! assert_eq!(uuid, code);
 //! ```
 //!
 //! ## From a slice
@@ -19,6 +23,18 @@
 //! let data = b"moofftyp";
 //! let code = FourCC::from(&data[0..4]);  // would panic if fewer than 4 bytes
 //! assert_eq!(FourCC(*b"moof"), code);
+//! ```
+//!
+//! ## From a u32
+//!
+//! ```rust
+//! # use four_cc::FourCC;
+//! let data: u32 = 0x6d6f6f66;
+//! let code = FourCC::from(data);
+//! assert_eq!(FourCC(*b"moof"), code);
+//! // conversion back into a u32
+//! let converted: u32 = code.into();
+//! assert_eq!(data, converted);
 //! ```
 //!
 //! ## Constants
@@ -251,7 +267,45 @@ mod tests {
 
     #[test]
     fn int_conversions() {
-        assert_eq!(0x41424344u32, FourCC(*b"ABCD").into());
+        let val: u32 = FourCC(*b"ABCD").into();
+        assert_eq!(0x41424344_u32, val);
         assert_eq!(FourCC(*b"ABCD"), 0x41424344u32.into());
+    }
+
+    #[test]
+    fn display() {
+        assert_eq!("uuid", format!("{}", FourCC(*b"uuid")));
+        assert_eq!("\\x00uid", format!("{}", FourCC(*b"\x00uid")));
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn serialize() {
+        use serde_test::{assert_tokens, Token};
+
+        let code = FourCC(*b"uuid");
+        assert_tokens(&code, &[Token::Str("uuid")]);
+    }
+
+    #[cfg(feature = "serde")]
+    #[test]
+    fn deserialize() {
+        use std::str::FromStr;
+        let data = "uuid";
+        let code = FourCC::from_str(data).unwrap();
+        assert_eq!(code, FourCC(*b"uuid"));
+    }
+
+    #[cfg(feature = "schemars")]
+    #[test]
+    fn schema() {
+        let schema = schemars::schema_for!(FourCC);
+        let expected_type = schemars::schema::InstanceType::String;
+        assert_eq!(
+            schema.schema.instance_type,
+            Some(schemars::schema::SingleOrVec::Single(Box::from(
+                expected_type
+            )))
+        );
     }
 }

@@ -21,6 +21,6 @@ jobs:
     - name: Build
       run: cargo build --verbose
     - name: Run no_std tests
-      run: cargo test --no-default-features --verbose
+      run: cargo test --no-default-features
     - name: Run std tests
-      run: cargo test --features std --verbose
+      run: cargo test --features std,serde,schemars --doc
