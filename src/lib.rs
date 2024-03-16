@@ -272,6 +272,7 @@ mod tests {
         assert_eq!(FourCC(*b"ABCD"), 0x41424344u32.into());
     }
 
+    #[cfg(feature = "std")]
     #[test]
     fn display() {
         assert_eq!("uuid", format!("{}", FourCC(*b"uuid")));
