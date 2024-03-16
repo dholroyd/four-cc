@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+ - Updated to Rust 2021 edition
+
 ### Fixed
  - The `Display` implementation now escapes control characters as intended.  Previously, control characters that are
    valid in unicode were left unchanged, including things like newline (`\n`).
