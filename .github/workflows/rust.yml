@@ -28,7 +28,7 @@ jobs:
     runs-on: ubuntu-22.04
 
     container:
-      image: xd009642/tarpaulin:0.27.3
+      image: xd009642/tarpaulin:0.27.3-nightly
       options: --security-opt seccomp=unconfined
     steps:
     - uses: actions/checkout@v4
