@@ -1,6 +1,3 @@
 pre-release-replacements = [
-    {file="CHANGELOG.md", search="## Unreleased", replace="## {{version}} - {{date}}", exactly=1},
-]
-post-release-replacements = [
-    {file="CHANGELOG.md", search="# four-cc Change Log", replace="# four-cc Change Log\n\n## Unreleased", exactly=1},
+    {file="CHANGELOG.md", search="## Unreleased", replace="## Unreleased\n\n## {{version}} - {{date}}", exactly=1},
 ]
