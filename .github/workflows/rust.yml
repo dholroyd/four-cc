@@ -24,3 +24,21 @@ jobs:
       run: cargo test --no-default-features
     - name: Run std tests
       run: cargo test --features std,serde,schemars --doc
+
+  coverage:
+    runs-on: ubuntu-latest
+
+    container:
+      image: xd009642/tarpaulin:develop-nightly
+      options: --security-opt seccomp=unconfined
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Generate code coverage
+      run: cargo tarpaulin --features std,serde,schemars --doc --tests --timeout 120 --out lcov
+
+    - name: upload to Coveralls
+      uses: coverallsapp/github-action@v2.2.3
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: './lcov.info'
