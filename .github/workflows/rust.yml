@@ -37,7 +37,7 @@ jobs:
       run: cargo tarpaulin --features std,serde,schemars --doc --tests --timeout 120 --out lcov
 
     - name: upload to Coveralls
-      uses: coverallsapp/github-action@v2.2.3
+      uses: coverallsapp/github-action@v2.3.0
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
         path-to-lcov: './lcov.info'
