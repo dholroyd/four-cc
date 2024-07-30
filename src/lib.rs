@@ -100,9 +100,11 @@
 #![cfg_attr(feature = "nightly", feature(const_trait_impl))]
 #![cfg_attr(not(feature = "std"), no_std)]
 
+use core::cmp::Ordering;
 use core::fmt;
 use core::fmt::Write;
 use core::result::Result;
+use core::str::FromStr;
 
 /// A _four-character-code_ value.
 ///
@@ -139,6 +141,30 @@ impl From<u32> for FourCC {
         ])
     }
 }
+impl PartialOrd for FourCC {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        // Implement comparison logic here, possibly using the inner FourCC value
+        // For example, if FourCC can be converted to something comparable:
+        self.to_string().partial_cmp(&other.to_string())
+    }
+}
+impl Ord for FourCC {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.to_string().cmp(&other.to_string())
+    }
+}
+impl FromStr for FourCC {
+    type Err = u32;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        if s.len() != 4 {
+            return Err(s.len() as u32);
+        }
+        let mut buf = [0u8; 4];
+        buf.copy_from_slice(s.as_bytes());
+        Ok(FourCC(buf))
+    }
+}
+
 // The macro is needed, because the `impl const` syntax doesn't exists on `stable`.
 #[cfg(not(feature = "nightly"))]
 macro_rules! from_fourcc_for_u32 {
@@ -217,14 +243,6 @@ impl<T> FromStrVisitor<T> {
             expecting: expecting,
             ty: core::marker::PhantomData,
         }
-    }
-}
-
-#[cfg(feature = "serde")]
-impl core::str::FromStr for FourCC {
-    type Err = u32;
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(s.as_bytes().into())
     }
 }
 
